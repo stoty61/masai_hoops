@@ -13,6 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
 from keras.preprocessing.sequence import pad_sequences
+from sklearn.preprocessing import MinMaxScaler
 
 
 # use each year to create csvs of all player data
@@ -136,147 +137,196 @@ with warnings.catch_warnings():
 
 df = list_to_df(df_list)
 
-# Sort dataframe by PLAYER_ID and SEASON_ID
-df.sort_values(by=['PLAYER_ID', 'SEASON_ID'], inplace=True)
+# Feature scaling using Min-Max scaling
+scaler = MinMaxScaler()
+df_scaled = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
 
-# Add a column for the next year's stats
-df['NEXT_PTS'] = df.groupby('PLAYER_ID')['PTS'].shift(-1)
+# Function to create sequences and labels
+def create_sequences_and_labels(data, sequence_length):
+    sequences, labels = [], []
+    for i in range(len(data) - sequence_length + 1):
+        seq = data.iloc[i:i+sequence_length].values
+        label = data.iloc[i+sequence_length-1].values
+        sequences.append(seq)
+        labels.append(label)
+    return np.array(sequences), np.array(labels)
 
-# Drop rows where NEXT_PTS is NaN (last season for each player)
-df = df.dropna(subset=['NEXT_PTS'])
+# Define the maximum sequence length
+max_sequence_length = 5  # Adjust as needed
 
-print(df.head(22))
+# Create sequences and labels
+X, y = create_sequences_and_labels(df_scaled, max_sequence_length)
 
-# Select relevant columns for training
-columns_to_use = ['PLAYER_ID', 'SEASON_ID', 'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
-                  'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
-# columns_to_use = ['PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
-#                   'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
+# Split the data into training and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Standardize the features
-scaler = StandardScaler()
-df[columns_to_use[2:]] = scaler.fit_transform(df[columns_to_use[2:]])
-
-# Create sequences for training
-X_seq, y_seq = [], []
-
-for player_id, player_data in df.groupby('PLAYER_ID'):
-    player_data = player_data[columns_to_use]
-    
-    player_X_seq, player_y_seq = [], []
-    
-    for i in range(len(player_data) - 1):
-        player_X_seq.append(player_data.iloc[:i + 1].values)
-        player_y_seq.append(player_data.iloc[i + 1]['NEXT_PTS'])
-
-
-
-
-    X_seq.append(player_X_seq)
-    y_seq.extend(player_y_seq)
-
-
-all_players = players.get_active_players()
-print(f"Total number of players: {len(all_players)}")
-print(len(X_seq))
-
-max_seasons = df.groupby('PLAYER_ID')['SEASON_ID'].nunique().max()
-print(max_seasons)
-print(len(columns_to_use))
-# Pad sequences to a fixed length (adjust maxlen as needed)
-X_seq_padded = pad_sequences(X_seq, dtype='float32', padding='post', truncating='post', maxlen=max_seasons)
-
-
-print(X_seq_padded.shape)
-# Pad sequences to a fixed length (adjust maxlen as needed)
-y_seq = np.array(y_seq)
-
-
-print(X_seq_padded[0])
-
-# Split the data into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X_seq_padded, y_seq, test_size=0.2, random_state=42)
-
-# Build the LSTM model
+# Build the model
 model = Sequential()
-model.add(LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])))
-model.add(Dense(1))
-model.compile(optimizer='adam', loss='mse')
-print('fitting')
+model.add(LSTM(units=50, input_shape=(X_train.shape[1], X_train.shape[2])))
+model.add(Dense(units=df.shape[1]))  # Output layer with the same number of features as input
+
+# Compile the model
+model.compile(optimizer='adam', loss='mse')  # Adjust the loss function based on your task
+
 # Train the model
-model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=2)
+model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
 
-# Make predictions for a specific player's next year's PTS
-player_id_to_predict = 2544  # Replace with the desired PLAYER_ID
-player_data_to_predict = df[df['PLAYER_ID'] == player_id_to_predict][columns_to_use].values
-player_data_to_predict[:, 2:] = scaler.transform(player_data_to_predict[:, 2:])
-player_data_to_predict = player_data_to_predict.reshape((1, player_data_to_predict.shape[0], player_data_to_predict.shape[1])).astype('float32')  # Modify this line
+print("here")
+# Now you can use the trained model to make predictions on new data
+# For example, if you have a new player's stats for the last 3 seasons:
+new_data = np.array([df_scaled.iloc[-max_sequence_length:].values])
+predicted_stats = model.predict(new_data)
 
-predicted_pts = model.predict(player_data_to_predict)
-
-print(f"Predicted PTS for the next season: {predicted_pts[0][0]}")
-
+# Inverse transform the predicted stats to get them in the original scale
+predicted_stats_original_scale = scaler.inverse_transform(predicted_stats)
 
 
-# Define features and target
-# features = ['Feature1', 'Feature2', '...']  # Replace with actual feature names
-# target = 'PTS'
 
-# # Extract features and target
-# X = df[features].values
-# y = df[target].values
 
-# # Normalize the features
-# scaler = MinMaxScaler()
-# X_scaled = scaler.fit_transform(X)
 
-# # Create sequences of past stats for each player
-# sequences = []
-# next_season_pts = []
 
-# unique_players = df['Player'].unique()
 
-# for player in unique_players:
-#     player_data = df[df['Player'] == player]
-#     player_features = player_data[features].values
-#     player_features_scaled = scaler.transform(player_features)
+# # Sort dataframe by PLAYER_ID and SEASON_ID
+# df.sort_values(by=['PLAYER_ID', 'SEASON_ID'], inplace=True)
 
-#     for i in range(1, len(player_data)):
-#         sequence = player_features_scaled[:i]
-#         target_pts = player_data.iloc[i][target]
-#         sequences.append(sequence)
-#         next_season_pts.append(target_pts)
+# # Add a column for the next year's stats
+# df['NEXT_PTS'] = df.groupby('PLAYER_ID')['PTS'].shift(-1)
 
-# X_seq = np.array(sequences)
-# y_seq = np.array(next_season_pts)
+# # Drop rows where NEXT_PTS is NaN (last season for each player)
+# df = df.dropna(subset=['NEXT_PTS'])
+
+# print(df.head(22))
+
+# # Select relevant columns for training
+# columns_to_use = ['PLAYER_ID', 'SEASON_ID', 'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
+#                   'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
+# # columns_to_use = ['PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
+# #                   'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
+
+# # Standardize the features
+# scaler = StandardScaler()
+# df[columns_to_use[2:]] = scaler.fit_transform(df[columns_to_use[2:]])
+
+# # Create sequences for training
+# X_seq, y_seq = [], []
+
+# for player_id, player_data in df.groupby('PLAYER_ID'):
+#     player_data = player_data[columns_to_use]
+    
+#     player_X_seq, player_y_seq = [], []
+    
+#     for i in range(len(player_data) - 1):
+#         player_X_seq.append(player_data.iloc[:i + 1].values)
+#         player_y_seq.append(player_data.iloc[i + 1]['NEXT_PTS'])
+
+
+
+
+#     X_seq.append(player_X_seq)
+#     y_seq.extend(player_y_seq)
+
+
+# all_players = players.get_active_players()
+# print(f"Total number of players: {len(all_players)}")
+# print(len(X_seq))
+
+# max_seasons = df.groupby('PLAYER_ID')['SEASON_ID'].nunique().max()
+# print(max_seasons)
+# print(len(columns_to_use))
+# # Pad sequences to a fixed length (adjust maxlen as needed)
+# X_seq_padded = pad_sequences(X_seq, dtype='float32', padding='post', truncating='post', maxlen=max_seasons)
+
+
+# print(X_seq_padded.shape)
+# # Pad sequences to a fixed length (adjust maxlen as needed)
+# y_seq = np.array(y_seq)
+
+
+# print(X_seq_padded[0])
 
 # # Split the data into training and testing sets
-# X_train, X_test, y_train, y_test = train_test_split(X_seq, y_seq, test_size=0.2, random_state=42)
+# X_train, X_test, y_train, y_test = train_test_split(X_seq_padded, y_seq, test_size=0.2, random_state=42)
 
-# # Build the RNN model using TensorFlow
-# model = tf.keras.Sequential([
-#     tf.keras.layers.LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])),
-#     tf.keras.layers.Dense(1)
-# ])
-
-# model.compile(optimizer='adam', loss='mse')  # Mean Squared Error loss for regression
-
+# # Build the LSTM model
+# model = Sequential()
+# model.add(LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])))
+# model.add(Dense(1))
+# model.compile(optimizer='adam', loss='mse')
+# print('fitting')
 # # Train the model
-# model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+# model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=2)
 
-# # Now you can use the trained model to make predictions on new data for future seasons
+# # Make predictions for a specific player's next year's PTS
+# player_id_to_predict = 2544  # Replace with the desired PLAYER_ID
+# player_data_to_predict = df[df['PLAYER_ID'] == player_id_to_predict][columns_to_use].values
+# player_data_to_predict[:, 2:] = scaler.transform(player_data_to_predict[:, 2:])
+# player_data_to_predict = player_data_to_predict.reshape((1, player_data_to_predict.shape[0], player_data_to_predict.shape[1])).astype('float32')  # Modify this line
+
+# predicted_pts = model.predict(player_data_to_predict)
+
+# print(f"Predicted PTS for the next season: {predicted_pts[0][0]}")
 
 
 
-# # Nikola Jokić
-# # career = playercareerstats.PlayerCareerStats(player_id='203999') 
+# # Define features and target
+# # features = ['Feature1', 'Feature2', '...']  # Replace with actual feature names
+# # target = 'PTS'
 
-# # # pandas data frames (optional: pip install pandas)
-# # data = career.get_data_frames()[0]
+# # # Extract features and target
+# # X = df[features].values
+# # y = df[target].values
 
-# # datatable = pd.DataFrame(data)
+# # # Normalize the features
+# # scaler = MinMaxScaler()
+# # X_scaled = scaler.fit_transform(X)
 
-# print(datatable)
+# # # Create sequences of past stats for each player
+# # sequences = []
+# # next_season_pts = []
+
+# # unique_players = df['Player'].unique()
+
+# # for player in unique_players:
+# #     player_data = df[df['Player'] == player]
+# #     player_features = player_data[features].values
+# #     player_features_scaled = scaler.transform(player_features)
+
+# #     for i in range(1, len(player_data)):
+# #         sequence = player_features_scaled[:i]
+# #         target_pts = player_data.iloc[i][target]
+# #         sequences.append(sequence)
+# #         next_season_pts.append(target_pts)
+
+# # X_seq = np.array(sequences)
+# # y_seq = np.array(next_season_pts)
+
+# # # Split the data into training and testing sets
+# # X_train, X_test, y_train, y_test = train_test_split(X_seq, y_seq, test_size=0.2, random_state=42)
+
+# # # Build the RNN model using TensorFlow
+# # model = tf.keras.Sequential([
+# #     tf.keras.layers.LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])),
+# #     tf.keras.layers.Dense(1)
+# # ])
+
+# # model.compile(optimizer='adam', loss='mse')  # Mean Squared Error loss for regression
+
+# # # Train the model
+# # model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
+
+# # # Now you can use the trained model to make predictions on new data for future seasons
+
+
+
+# # # Nikola Jokić
+# # # career = playercareerstats.PlayerCareerStats(player_id='203999') 
+
+# # # # pandas data frames (optional: pip install pandas)
+# # # data = career.get_data_frames()[0]
+
+# # # datatable = pd.DataFrame(data)
+
+# # print(datatable)
 
 
 
