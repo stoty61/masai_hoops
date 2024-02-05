@@ -11,10 +11,10 @@ import warnings
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from keras.models import Sequential
-from keras.layers import LSTM, Dense
+from keras.layers import LSTM, Dense, Masking
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import MinMaxScaler
-
+import tensorflow as tf
 
 # use each year to create csvs of all player data
 def generate_player_data(year):
@@ -126,207 +126,173 @@ def list_to_df(df_list):
 # Generate new player data
 # generate_player_data("2024")
         
-df_list = read_csv_files_in_folder("2024")
+# df_list = read_csv_files_in_folder("2024")
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    # Display the resulting DataFrame
-    print(df_list[0])
+# # for player_data in df_list:
+# #     player_data['PPG'] = player_data['PTS'] / player_data['GP']
+# #     player_data['PFPG'] = player_data['PF'] / player_data['GP']
+# #     player_data['TOVPG'] = player_data['TOV'] / player_data['GP']
+# #     player_data['BPG'] = player_data['BLK'] / player_data['GP']
+# #     player_data['SPG'] = player_data['STL'] / player_data['GP']
+# #     player_data['APG'] = player_data['AST'] / player_data['GP']
+# #     player_data['DRPG'] = player_data['DREB'] / player_data['GP']
+# #     player_data['ORPG'] = player_data['OREB'] / player_data['GP']
+# #     player_data['FTP'] = player_data['FTM'] / player_data['FTA']
+# #     player_data['FGP'] = player_data['FGM'] / player_data['FGA']
+# #     player_data['TPP'] = player_data['FG3M'] / player_data['FG3A']
 
+# features = ['GP', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS']
 
-
-df = list_to_df(df_list)
-
-# Feature scaling using Min-Max scaling
-scaler = MinMaxScaler()
-df_scaled = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
-
-# Function to create sequences and labels
-def create_sequences_and_labels(data, sequence_length):
-    sequences, labels = [], []
-    for i in range(len(data) - sequence_length + 1):
-        seq = data.iloc[i:i+sequence_length].values
-        label = data.iloc[i+sequence_length-1].values
-        sequences.append(seq)
-        labels.append(label)
-    return np.array(sequences), np.array(labels)
-
-# Define the maximum sequence length
-max_sequence_length = 5  # Adjust as needed
-
-# Create sequences and labels
-X, y = create_sequences_and_labels(df_scaled, max_sequence_length)
-
-# Split the data into training and validation sets
-X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Build the model
-model = Sequential()
-model.add(LSTM(units=50, input_shape=(X_train.shape[1], X_train.shape[2])))
-model.add(Dense(units=df.shape[1]))  # Output layer with the same number of features as input
-
-# Compile the model
-model.compile(optimizer='adam', loss='mse')  # Adjust the loss function based on your task
-
-# Train the model
-model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
-
-print("here")
-# Now you can use the trained model to make predictions on new data
-# For example, if you have a new player's stats for the last 3 seasons:
-new_data = np.array([df_scaled.iloc[-max_sequence_length:].values])
-predicted_stats = model.predict(new_data)
-
-# Inverse transform the predicted stats to get them in the original scale
-predicted_stats_original_scale = scaler.inverse_transform(predicted_stats)
+# sequences = []
+# labels = []
 
 
 
+# for player_data in df_list:
+#     player_features = player_data[features].values
+
+#     for i in range(1, len(player_data)):
+#         if i < len(player_data):
+#             sequences.append(player_features[:i])
+#             labels.append(player_features[i])  # Label is the statistics for the next year
 
 
+# sequences = pad_sequences(sequences, dtype='float32', padding='post', truncating='post', value=0.0)
 
+# sequences = np.array(sequences)
+# labels = np.array(labels)
 
-# # Sort dataframe by PLAYER_ID and SEASON_ID
-# df.sort_values(by=['PLAYER_ID', 'SEASON_ID'], inplace=True)
+# X_train, X_test, y_train, y_test = train_test_split(sequences, labels, test_size=0.2, random_state=42)
 
-# # Add a column for the next year's stats
-# df['NEXT_PTS'] = df.groupby('PLAYER_ID')['PTS'].shift(-1)
+# # Normalize the data
+# scaler = MinMaxScaler()
+# X_train_flat = X_train.reshape(-1, len(features))
+# X_test_flat = X_test.reshape(-1, len(features))
+# X_train_flat_normalized = scaler.fit_transform(X_train_flat)
+# X_test_flat_normalized = scaler.transform(X_test_flat)
 
-# # Drop rows where NEXT_PTS is NaN (last season for each player)
-# df = df.dropna(subset=['NEXT_PTS'])
-
-# print(df.head(22))
-
-# # Select relevant columns for training
-# columns_to_use = ['PLAYER_ID', 'SEASON_ID', 'PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
-#                   'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
-# # columns_to_use = ['PLAYER_AGE', 'GP', 'GS', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA',
-# #                   'OREB', 'DREB', 'REB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'NEXT_PTS']
-
-# # Standardize the features
-# scaler = StandardScaler()
-# df[columns_to_use[2:]] = scaler.fit_transform(df[columns_to_use[2:]])
-
-# # Create sequences for training
-# X_seq, y_seq = [], []
-
-# for player_id, player_data in df.groupby('PLAYER_ID'):
-#     player_data = player_data[columns_to_use]
-    
-#     player_X_seq, player_y_seq = [], []
-    
-#     for i in range(len(player_data) - 1):
-#         player_X_seq.append(player_data.iloc[:i + 1].values)
-#         player_y_seq.append(player_data.iloc[i + 1]['NEXT_PTS'])
-
-
-
-
-#     X_seq.append(player_X_seq)
-#     y_seq.extend(player_y_seq)
-
-
-# all_players = players.get_active_players()
-# print(f"Total number of players: {len(all_players)}")
-# print(len(X_seq))
-
-# max_seasons = df.groupby('PLAYER_ID')['SEASON_ID'].nunique().max()
-# print(max_seasons)
-# print(len(columns_to_use))
-# # Pad sequences to a fixed length (adjust maxlen as needed)
-# X_seq_padded = pad_sequences(X_seq, dtype='float32', padding='post', truncating='post', maxlen=max_seasons)
-
-
-# print(X_seq_padded.shape)
-# # Pad sequences to a fixed length (adjust maxlen as needed)
-# y_seq = np.array(y_seq)
-
-
-# print(X_seq_padded[0])
-
-# # Split the data into training and testing sets
-# X_train, X_test, y_train, y_test = train_test_split(X_seq_padded, y_seq, test_size=0.2, random_state=42)
+# # Reshape back to 3D for LSTM input
+# X_train = X_train_flat_normalized.reshape(X_train.shape)
+# X_test = X_test_flat_normalized.reshape(X_test.shape)
 
 # # Build the LSTM model
 # model = Sequential()
-# model.add(LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])))
-# model.add(Dense(1))
-# model.compile(optimizer='adam', loss='mse')
-# print('fitting')
+# model.add(Masking(mask_value=0.0, input_shape=(None, len(features))))
+# model.add(LSTM(50))
+# model.add(Dense(len(features)))  # Output layer with the same number of neurons as features
+# model.compile(optimizer='adam', loss='mean_squared_error')
+
 # # Train the model
-# model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test), verbose=2)
-
-# # Make predictions for a specific player's next year's PTS
-# player_id_to_predict = 2544  # Replace with the desired PLAYER_ID
-# player_data_to_predict = df[df['PLAYER_ID'] == player_id_to_predict][columns_to_use].values
-# player_data_to_predict[:, 2:] = scaler.transform(player_data_to_predict[:, 2:])
-# player_data_to_predict = player_data_to_predict.reshape((1, player_data_to_predict.shape[0], player_data_to_predict.shape[1])).astype('float32')  # Modify this line
-
-# predicted_pts = model.predict(player_data_to_predict)
-
-# print(f"Predicted PTS for the next season: {predicted_pts[0][0]}")
+# model.fit(X_train, y_train, epochs=5, batch_size=32, validation_data=(X_test, y_test))
 
 
 
-# # Define features and target
-# # features = ['Feature1', 'Feature2', '...']  # Replace with actual feature names
-# # target = 'PTS'
+# # Assuming you want to predict for the next year
+# # Take the last sequence for each player and make predictions
+# # Assuming you want to predict for the next year
+# # Take the last sequence for each player and make predictions
+# predictions = []
+# for player_data in df_list:
+#     if len(player_data) >= 2:  # Check if there are enough samples to create a sequence
+#         last_sequence = player_data[features].values[-1:]
 
-# # # Extract features and target
-# # X = df[features].values
-# # y = df[target].values
+#         # Add an additional dimension to the input data
+#         last_sequence = np.expand_dims(last_sequence, axis=0)  # Add batch dimension
+#         last_sequence = np.expand_dims(last_sequence, axis=2)  # Add time dimension
 
-# # # Normalize the features
-# # scaler = MinMaxScaler()
-# # X_scaled = scaler.fit_transform(X)
+#         last_sequence_flat = last_sequence.reshape(-1, len(features))
+#         last_sequence_flat_normalized = scaler.transform(last_sequence_flat)
+#         last_sequence_reshaped = last_sequence_flat_normalized.reshape((1, last_sequence.shape[1], len(features)))
 
-# # # Create sequences of past stats for each player
-# # sequences = []
-# # next_season_pts = []
+#         prediction = model.predict(last_sequence_reshaped)
+#         predictions.append(prediction[0])
 
-# # unique_players = df['Player'].unique()
-
-# # for player in unique_players:
-# #     player_data = df[df['Player'] == player]
-# #     player_features = player_data[features].values
-# #     player_features_scaled = scaler.transform(player_features)
-
-# #     for i in range(1, len(player_data)):
-# #         sequence = player_features_scaled[:i]
-# #         target_pts = player_data.iloc[i][target]
-# #         sequences.append(sequence)
-# #         next_season_pts.append(target_pts)
-
-# # X_seq = np.array(sequences)
-# # y_seq = np.array(next_season_pts)
-
-# # # Split the data into training and testing sets
-# # X_train, X_test, y_train, y_test = train_test_split(X_seq, y_seq, test_size=0.2, random_state=42)
-
-# # # Build the RNN model using TensorFlow
-# # model = tf.keras.Sequential([
-# #     tf.keras.layers.LSTM(50, activation='relu', input_shape=(None, X_train.shape[2])),
-# #     tf.keras.layers.Dense(1)
-# # ])
-
-# # model.compile(optimizer='adam', loss='mse')  # Mean Squared Error loss for regression
-
-# # # Train the model
-# # model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_test, y_test))
-
-# # # Now you can use the trained model to make predictions on new data for future seasons
+#         # Debugging prints
+#         print(f"Player: {player_data['PLAYER_ID'].iloc[0]}")
+#         print("Last Sequence:", last_sequence)
+#         print("Last Sequence Normalized:", last_sequence_flat_normalized)
+#         print("Predicted Values (Normalized):", prediction)
+        
+#         # Invert the normalization to get the actual prediction values
+#         prediction_inverted = scaler.inverse_transform(prediction.reshape(1, -1))
+#         print("Predicted Values (Inverted):", prediction_inverted)
+#     else:
+#         print(f"Skipping prediction for player with insufficient data:")
 
 
+df_list = read_csv_files_in_folder("2024")
 
-# # # Nikola Jokić
-# # # career = playercareerstats.PlayerCareerStats(player_id='203999') 
+features = ['GP', 'MIN', 'FGM', 'FGA', 'FG3M', 'FG3A', 'FTM', 'FTA', 'OREB', 'DREB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS']
 
-# # # # pandas data frames (optional: pip install pandas)
-# # # data = career.get_data_frames()[0]
+sequences = []
+labels = []
 
-# # # datatable = pd.DataFrame(data)
+df_list = [df.iloc[:-1] for df in df_list]
 
-# # print(datatable)
+for player_data in df_list:
+    player_features = player_data[features].values
+
+    for i in range(1, len(player_data)):
+        if i < len(player_data):
+            sequences.append(player_features[:i])
+            labels.append(player_features[i])  # Label is the statistics for the next year
+
+sequences = pad_sequences(sequences, dtype='float32', padding='post', truncating='post', value=0.0)
+
+sequences = np.array(sequences)
+labels = np.array(labels)
+
+X_train, X_test, y_train, y_test = train_test_split(sequences, labels, test_size=0.2, random_state=42)
+
+# Build the LSTM model without normalization
+model = Sequential()
+model.add(Masking(mask_value=0.0, input_shape=(None, len(features))))
+model.add(LSTM(50))
+model.add(Dense(len(features)))  # Output layer with the same number of neurons as features
+model.compile(optimizer='adam', loss='mean_squared_error')
+
+# Train the model
+model.fit(X_train, y_train, epochs=100000, batch_size=32, validation_data=(X_test, y_test))
+
+# Make predictions without normalization
+predictions = []
+player_info_list = []
+
+for player_data in df_list:
+    if len(player_data) >= 1:  # Check if there are enough samples to create a sequence
+        last_sequence = player_data[features].values[-1:]
+
+        # Add an additional dimension to the input data
+        last_sequence = np.expand_dims(last_sequence, axis=0)  # Add batch dimension
+        last_sequence = np.expand_dims(last_sequence, axis=2)  # Add time dimension
+
+        last_sequence_reshaped = last_sequence.reshape((1, last_sequence.shape[1], len(features)))
+
+        prediction = model.predict(last_sequence_reshaped)
+        predictions.append(prediction[0])
+        player_info_list.append(player_data.iloc[-1])  # Add the last row (player information)
+
+        # Debugging prints
+        print(f"Player: {player_data['PLAYER_ID'].iloc[0]}")
+        print("Last Sequence:", last_sequence)
+        print("Predicted Values:", prediction)
+    else:
+        print(f"Skipping prediction for player with insufficient data:")
+
+# Create DataFrame for predictions
+prediction_df = pd.DataFrame(predictions, columns=features)
+
+# Concatenate with player information
+player_info_df = pd.DataFrame(player_info_list)
+prediction_df = pd.concat([player_info_df.reset_index(drop=True), prediction_df], axis=1)
+
+# Add Player_Name based on Player_ID
+prediction_df['Player_Name'] = prediction_df['PLAYER_ID'].apply(lambda x: players.find_player_by_id(x)["full_name"])
+
+# Display the filled prediction_df
+print(prediction_df.columns)
+print(prediction_df.head())
 
 
-
+# Export DataFrame to CSV file
+prediction_df.to_csv('prediction_results_2024.csv', index=False)
