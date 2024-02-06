@@ -15,6 +15,10 @@ from keras.layers import LSTM, Dense, Masking
 from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
+from keras.callbacks import ModelCheckpoint
+
+print("Num GPUs Available: ", tf.config.list_physical_devices('GPU'))
+print(tf.test.is_built_with_cuda())  # Should return True if TensorFlow is built with CUDA
 
 # use each year to create csvs of all player data
 def generate_player_data(year):
@@ -251,8 +255,14 @@ model.add(LSTM(50))
 model.add(Dense(len(features)))  # Output layer with the same number of neurons as features
 model.compile(optimizer='adam', loss='mean_squared_error')
 
+# Define the checkpoint callback to save the model every 50,000 epochs
+checkpoint = ModelCheckpoint('model_{epoch:02d}.h5', period=50000)
+
 # Train the model
-model.fit(X_train, y_train, epochs=100000, batch_size=32, validation_data=(X_test, y_test))
+model.fit(X_train, y_train, epochs=500000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
+
+# Save the trained model
+model.save('2023-2024.h5')
 
 # Make predictions without normalization
 predictions = []
