@@ -259,7 +259,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 checkpoint = ModelCheckpoint('model_{epoch:02d}.h5', period=50000)
 
 # Train the model
-model.fit(X_train, y_train, epochs=500000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
+model.fit(X_train, y_train, epochs=300000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
 
 # Save the trained model
 model.save('2023-2024.h5')
