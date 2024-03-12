@@ -16,6 +16,7 @@ from keras.preprocessing.sequence import pad_sequences
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
 
 print("Num GPUs Available: ", tf.config.list_physical_devices('GPU'))
 print(tf.test.is_built_with_cuda())  # Should return True if TensorFlow is built with CUDA
@@ -258,8 +259,11 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 # Define the checkpoint callback to save the model every 50,000 epochs
 checkpoint = ModelCheckpoint('model_{epoch:02d}.h5', period=50000)
 
+# load pretrained model 
+model = load_model('model_50000.h5')
+
 # Train the model
-model.fit(X_train, y_train, epochs=300000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
+model.fit(X_train, y_train, epochs=50000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
 
 # Save the trained model
 model.save('2023-2024.h5')

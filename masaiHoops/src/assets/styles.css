@@ -1,0 +1,26 @@
+html, body, #root, #app, #app>div {
+    height: 100%;
+    width: 100%;
+  }
+
+  .bg-body-tertiary {
+    width: 100%;
+  }
+
+  #root {
+    padding: 0px;
+    max-width: 100%;
+
+  }
+
+.navLinkBar{
+    max-width: 40%; 
+}
+
+.websiteName{
+    transform: translateX(-85px);
+}
+
+.custom-nav-bg {
+  background-color: #E8ECEB;
+}
