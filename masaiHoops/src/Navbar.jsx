@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -6,7 +6,7 @@ import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import logo from './assets/logoOnly.png';
-import name from './assets/name.png';
+import sitename from './assets/name.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { incrementByAmount, setUsername, setPassword, setEmail } from './slices/login_info';
 
@@ -14,17 +14,53 @@ function Intro() {
   const [incrementAmount, setIncrementAmount] = useState(2);
   const dispatch = useDispatch(); // Get the dispatch function
 
-  const handleClick = () => {
+  const setUserInfo = (new_user, new_pass, new_email) => {
     // Dispatch actions to update Redux state
     dispatch(incrementByAmount(2));
-    dispatch(setUsername('username test'));
-    dispatch(setPassword('password test'));
-    dispatch(setEmail('email test'));
+    dispatch(setUsername(new_user));
+    dispatch(setPassword(new_pass));
+    dispatch(setEmail(new_email));
   };
+  
 
-  const user = useSelector((state) => state.loginInfo.username);
-  const pass = useSelector((state) => state.loginInfo.password);
+  setUserInfo("Test", "Test_pw", "Test_email"); 
+
+  const name = useSelector((state) => state.loginInfo.username);
+  const pw = useSelector((state) => state.loginInfo.password);
   const email = useSelector((state) => state.loginInfo.email);
+
+  const addUser = () => {
+
+    // Make sure user and password are not empty
+    // Make the POST request
+    fetch('/api/addUser', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({"name": name, "pw": pw, "email": email})
+    })
+    .then(response => {
+      if (response.ok) {
+        // Handle successful response
+        console.log('User added successfully.');
+      } else {
+        // Handle error response
+        throw new Error('Failed to add user.');
+      }
+    })
+    .catch(error => {
+      console.error('Error adding user:', error);
+    });
+  }
+  
+
+  var signedIn = false;
+
+  if (name != "" && pw != "" && email != "")
+  {
+    signedIn = true;
+  }
 
   return (
     // bg-body-tertiary
@@ -54,9 +90,9 @@ function Intro() {
           </div>
 
           {/* Website name */}
-          <div className="justify-content-center websiteName">
-            <Navbar.Text> <img src={name} height="40" className="d-inline-block align-top" alt="Logo" /> </Navbar.Text>
-          </div>
+          {/* <div className="justify-content-center websiteName">
+            <Navbar.Text> <img src={sitename} height="40" className="d-inline-block align-top" alt="Logo" /> </Navbar.Text>
+          </div> */}
 
           {/* Search form */}
           <Form className="d-flex justify-content-end text-end">
@@ -66,8 +102,10 @@ function Intro() {
               className="me-2"
               aria-label="Search"
             />
-            <Button variant="outline-success" className='me-2'>Search</Button>
-            <Button onClick={handleClick} variant="outline-success"> TEST <span>{user}</span> | <span>{pass}</span>  | <span>{email}</span>  </Button>
+            <Button variant="outline-success" className='me-2 navbutton'>Search</Button>
+            <Button className='navbutton' onClick={addUser} variant="outline-success"> 
+              {signedIn ? <div>{name}</div> : <div>Sign In</div>}
+            </Button>
           </Form>
         </Navbar.Collapse>
       </Container>

@@ -1,4 +1,5 @@
 from flask import Flask, jsonify
+from flask import request
 from flask_mysqldb import MySQL
 import time
 
@@ -13,18 +14,71 @@ app.config['MYSQL_DB'] = 'u835552006_BallStats'
 mysql = MySQL(app)
 
 
-@app.route("/members")
-def members():
-    cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM members")
-    data = cur.fetchall()
-    cur.close()
-    return jsonify({"members": data})
+# @app.route("/members")
+# def members():
+#     cur = mysql.connection.cursor()
+#     cur.execute("SELECT * FROM members")
+#     data = cur.fetchall()
+#     cur.close()
+#     return jsonify({"members": data})
+
+@app.route('/addUser', methods=['POST'])
+def addUser():
+    data = request.json  # or request.json
+    # Process the data
+    name = data.get('name')
+    email = data.get('email')
+    pw = data.get('pw')
+
+    cursor = mysql.connection.cursor()
+
+    try:
+        # Assuming your table has columns named col1, col2, col3
+        cursor.execute("INSERT INTO User_Info (Username, Email, Password) VALUES (%s, %s, %s)", (name, email, pw))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({'message': 'Data inserted successfully'}), 200
+    
+    except Exception as e:
+        mysql.connection.rollback()
+        cursor.close()
+        return jsonify({'error': str(e)}), 500
+
+
+
 
 
 @app.route("/")
 def entry():
     return {"test": ["one", "two", "three"]}
+
+
+# # Define a route for your API endpoint
+# @app.route('/addUser', methods=['PUT'])
+# def addUser():
+#     # Assuming you expect JSON data in the request body
+#     data = request.json
+
+#     # Extract the parameter sent from React
+#     name = data.get('name')
+#     email = data.get('email')
+#     pw = data.get('pw')
+
+#     print(name)
+
+
+#     # Perform the database insertion
+#     cursor = mysql.connection.cursor()
+#     try:
+#         # Assuming your table has columns named col1, col2, col3
+#         cursor.execute("INSERT INTO User_Info (col1, col2, col3) VALUES (%s, %s, %s)", (name, email, pw))
+#         mysql.connection.commit()
+#         cursor.close()
+#         return jsonify({'message': 'Data inserted successfully'}), 200
+#     except Exception as e:
+#         mysql.connection.rollback()
+#         cursor.close()
+#         return jsonify({'error': str(e)}), 500
 
 
 @app.route('/time')

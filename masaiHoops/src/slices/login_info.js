@@ -23,7 +23,6 @@ export const loginSlice = createSlice({
 
     setUsername: (state, action) => {
       state.username = action.payload;
-      console.log(state.username);
     },
 
     setPassword: (state, action) => {

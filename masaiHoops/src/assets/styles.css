@@ -24,3 +24,25 @@ html, body, #root, #app, #app>div {
 .custom-nav-bg {
   background-color: #E8ECEB;
 }
+
+
+.nav-link {
+  padding-left: 45px !important;
+  padding-right: 45px !important;
+  font-size: large !important;
+  width: 20vh;
+  text-align: center;
+  max-width: 250px;
+  min-width: 200px;
+}
+
+.nav-link.active { 
+  color: #080D60;
+  background-color: #d9d9d9 !important;
+  border-bottom: 2px solid #080D60; /* Adjust thickness and color as needed */
+}
+
+
+.navbutton {
+  width: 100px;
+}
