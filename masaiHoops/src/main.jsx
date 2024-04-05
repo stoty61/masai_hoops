@@ -8,12 +8,14 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'react-bootstrap';
 import store from './store'
 import { Provider } from 'react-redux'
+import Hero from './Hero'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
         
       <Navbar />
+      <Hero />
       <App />
 
     </Provider>
