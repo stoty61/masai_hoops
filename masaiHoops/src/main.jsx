@@ -9,12 +9,14 @@ import 'react-bootstrap';
 import store from './store'
 import { Provider } from 'react-redux'
 import Hero from './Hero'
+import {Leva} from "leva"
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <Provider store={store}>
         
       <Navbar />
+      <Leva /> 
       <Hero />
       <App />
 

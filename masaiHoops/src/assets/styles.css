@@ -54,3 +54,16 @@ html, body, #root, #app, #app>div {
 .login-icon{
   font-size: larger;
 }
+
+.w-50 {
+  width: 30%;
+}
+
+.text-center{
+  text-align: center;
+}
+
+.canvas-container {
+  width: 100%; /* Set the width of the canvas container */
+  height: 400px; /* Set the height of the canvas container */
+}
