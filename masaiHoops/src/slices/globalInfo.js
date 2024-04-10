@@ -1,9 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit'
 
 export const globalInfoSlice = createSlice({
-  name: 'home',
+  name: 'globalInfo',
   initialState: {
     value: 10,
+    activeTab: "home", 
   },
   reducers: {
     increment: (state) => {
@@ -20,10 +21,16 @@ export const globalInfoSlice = createSlice({
     incrementByAmount: (state, action) => {
       state.value += action.payload
     },
+
+    setActiveTab: (state, action) => {
+      state.activeTab = action.payload
+    }
+
+
   },
 })
 
 // Action creators are generated for each case reducer function
-export const { increment, decrement, incrementByAmount } = globalInfoSlice.actions
+export const { increment, decrement, incrementByAmount, setActiveTab } = globalInfoSlice.actions
 
 export default globalInfoSlice.reducer

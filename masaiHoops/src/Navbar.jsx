@@ -10,6 +10,7 @@ import sitename from './assets/name.png';
 import { useSelector, useDispatch } from 'react-redux';
 import { incrementByAmount, setUsername, setPassword, setEmail } from './slices/login_info';
 import { IoIosLogIn } from "react-icons/io";
+import { setActiveTab } from './slices/globalInfo';
 
 function Intro() {
   const [incrementAmount, setIncrementAmount] = useState(2);
