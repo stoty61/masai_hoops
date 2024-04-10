@@ -13,27 +13,31 @@ import { IoIosLogIn } from "react-icons/io";
 import { setActiveTab } from './slices/globalInfo';
 
 function Intro() {
-  const [incrementAmount, setIncrementAmount] = useState(2);
   const dispatch = useDispatch(); // Get the dispatch function
 
   var showModal = false;
 
-  const setUserInfo = (new_user, new_pass, new_email) => {
-    // Dispatch actions to update Redux state
-    dispatch(incrementByAmount(2));
-    dispatch(setUsername(new_user));
-    dispatch(setPassword(new_pass));
-    dispatch(setEmail(new_email));
-  };
   
-
-  // setUserInfo("Test", "Test_pw", "Test_email"); 
-
   const name = useSelector((state) => state.loginInfo.username);
   const pw = useSelector((state) => state.loginInfo.password);
   const email = useSelector((state) => state.loginInfo.email);
 
+  const activeTab = useSelector((state) => state.globalInfo.activeTab);
 
+  const setTab = (tab) => {
+    dispatch(setActiveTab(tab));
+    console.log(activeTab);
+  }
+  
+
+  // const setUserInfo = (new_user, new_pass, new_email) => {
+  //   // Dispatch actions to update Redux state
+  //   dispatch(incrementByAmount(2));
+  //   dispatch(setUsername(new_user));
+  //   dispatch(setPassword(new_pass));
+  //   dispatch(setEmail(new_email));
+  // };
+  
   const loginButton = () => {
     if (signedIn)
     {
@@ -95,13 +99,13 @@ function Intro() {
         <Navbar.Collapse id="navbarScroll" className='justify-content-between'>
           <div>
             <Nav className="me-auto my-2 my-lg-0" navbarScroll>
-              <Nav.Link active href="#action1">Home</Nav.Link>
-              <Nav.Link href="#action4">About</Nav.Link>
-              <Nav.Link href="#action2">Projections</Nav.Link>
-              <Nav.Link href="#action3">Optimization</Nav.Link>
-              <NavDropdown title="Trends" id="navbarScrollingDropdown">
-                <NavDropdown.Item href="#action5">Overperformers</NavDropdown.Item>
-                <NavDropdown.Item href="#action6">Underperformers</NavDropdown.Item>
+              <Nav.Link active={activeTab === "home"} onClick={() => setTab("home")} href="#action1">Home</Nav.Link>
+              <Nav.Link active={activeTab === "about"} onClick={() => setTab("about")} href="#action4">About</Nav.Link>
+              <Nav.Link active={activeTab === "projections"} onClick={() => setTab("projections")} href="#action2">Projections</Nav.Link>
+              <Nav.Link active={activeTab === "optimization"} onClick={() => setTab("optimization")} href="#action3">Optimization</Nav.Link>
+              <NavDropdown active={activeTab === "trends"} title="Trends" id="navbarScrollingDropdown">
+                <NavDropdown.Item onClick={() => setTab("trends")} href="#action5">Overperformers</NavDropdown.Item>
+                <NavDropdown.Item onClick={() => setTab("trends")} href="#action6">Underperformers</NavDropdown.Item>
               </NavDropdown>
             </Nav>
           </div>
