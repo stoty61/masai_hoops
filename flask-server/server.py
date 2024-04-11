@@ -85,13 +85,19 @@ def entry():
 def get_current_time():
     return {'time': time.time()}
 
-@app.route('/database_test')
+
+@app.route('/projections')
 def database_test():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM prediction_results_2024 LIMIT 1")
-    row = cur.fetchone()
+    cur.execute("SELECT * FROM prediction_results_2024")
+    rows = cur.fetchall()
+    
+    # Fetch column names from cursor description
+    column_names = [desc[0] for desc in cur.description]
+    
     cur.close()
-    return jsonify({"first_row": row})
+    return jsonify({"column_names": column_names, "rows": rows})
+
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

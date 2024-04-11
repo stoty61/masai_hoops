@@ -8,6 +8,7 @@ import 'react-bootstrap';
 import Hero from './Hero';
 import { Leva } from 'leva';
 import { useSelector } from 'react-redux';
+import Projections from './Projections';
 
 function Router() {
   const activeTab = useSelector((state) => state.globalInfo.activeTab);
@@ -24,9 +25,10 @@ function Router() {
           </>
         )
 
-      case "test":
+      case "projections":
         return(
           <>
+            <Projections />
           </>
         )
     } 

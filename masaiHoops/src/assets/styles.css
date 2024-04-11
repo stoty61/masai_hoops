@@ -67,3 +67,7 @@ html, body, #root, #app, #app>div {
   width: 100%; /* Set the width of the canvas container */
   height: 400px; /* Set the height of the canvas container */
 }
+
+.header-component {
+  color: #080D60
+}

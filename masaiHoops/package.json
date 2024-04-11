@@ -9,10 +9,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.4",
     "@react-three/drei": "^9.105.2",
     "@react-three/fiber": "^8.16.1",
     "@reduxjs/toolkit": "^2.2.1",
+    "@table-library/react-table-library": "^4.1.7",
     "@types/three": "^0.163.0",
+    "ag-grid-react": "^31.2.1",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
     "leva": "^0.9.35",
