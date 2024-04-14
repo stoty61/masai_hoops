@@ -89,9 +89,9 @@ const Scene = () => {
   const {dLightColor, dLightIntensity} = useControls({
     dLightColor: "orange",
     dLightIntensity: {
-      value: 0.1,
+      value: 1,
       min: 0,
-      max: 1
+      max: 2
     }
   })
 

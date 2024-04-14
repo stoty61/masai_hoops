@@ -89,7 +89,7 @@ def get_current_time():
 @app.route('/projections')
 def database_test():
     cur = mysql.connection.cursor()
-    cur.execute("SELECT * FROM prediction_results_2024")
+    cur.execute("SELECT * FROM prediction_results_2024_")
     rows = cur.fetchall()
     
     # Fetch column names from cursor description

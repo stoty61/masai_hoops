@@ -262,8 +262,8 @@ checkpoint = ModelCheckpoint('model_{epoch:02d}.h5', period=50000)
 # load pretrained model 
 model = load_model('model_50000.h5')
 
-# Train the model
-model.fit(X_train, y_train, epochs=50000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
+# Train the model (uncomment for trainig)
+# model.fit(X_train, y_train, epochs=50000, batch_size=32, validation_data=(X_test, y_test), callbacks=[checkpoint])
 
 # Save the trained model
 model.save('2023-2024.h5')
@@ -303,10 +303,52 @@ prediction_df = pd.concat([player_info_df.reset_index(drop=True), prediction_df]
 # Add Player_Name based on Player_ID
 prediction_df['Player_Name'] = prediction_df['PLAYER_ID'].apply(lambda x: players.find_player_by_id(x)["full_name"])
 
+
+def replace_negative_with_zero(df):
+    # Iterate over each cell in the DataFrame
+    for col in df.columns:
+        for idx in df.index:
+            # Check if the value is numeric and negative
+            if pd.api.types.is_numeric_dtype(df[col][idx]) and df[col][idx] < 0:
+                # Replace negative value with zero
+                df.at[idx, col] = 0
+    return df
+
+
+# Clean df before covnerting to csv
+def clean_prediction_df(df):
+    # remove negative vals
+
+    # Get boolean mask for duplicated column names
+    duplicated_columns = df.columns.duplicated(keep='last')
+
+    # Select only non-duplicated columns
+    df = df.loc[:, ~duplicated_columns]
+
+    print(df.columns)
+    df.rename(columns={'SEASON_ID': 'Season'}, inplace=True)
+    df['PPG'] = df['PTS'] / df['GP']
+    df['APG'] = df['AST'] / df['GP']
+    df['RPG'] = (df['OREB'] + df['DREB']) / df['GP']
+    df['ORPG'] = df['OREB'] / df['GP']
+    df['DRPG'] = df['DREB'] / df['GP']
+    df['SPG'] = df['STL'] / df['GP']
+    df['BPG'] = df['BLK'] / df['GP']
+    df['TOPG'] = df['TOV'] / df['GP']
+    df['PFPG'] = df['PF'] / df['GP']
+    df['MPG'] = df['MIN'] / df['GP']
+    df['FGP'] = df['FGM'] / df['FGA']
+    df['3FGP'] = df['FG3M'] / df['FG3A']
+    df['FTP'] = df['FTM'] / df['FTA']
+
+    return replace_negative_with_zero(df)
+
+df_final = clean_prediction_df(prediction_df)
+
 # Display the filled prediction_df
-print(prediction_df.columns)
-print(prediction_df.head())
+# print(df_final.columns)
+print(df_final.head())
 
 
 # Export DataFrame to CSV file
-prediction_df.to_csv('prediction_results_2024.csv', index=False)
+df_final.to_csv('prediction_results_2024_.csv', index=False)
