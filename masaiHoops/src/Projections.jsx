@@ -28,6 +28,7 @@ function Projections() {
     fetch('/api/projections') 
       .then(response => response.json())
       .then(data => {
+        console.log(data)
         setProjectionColumns(data.column_names.map(str => ({ field: str, filter: true})));
         setProjections(
           data.rows.map(innerArray => {
@@ -39,6 +40,7 @@ function Projections() {
           })
         );
         setDataLoaded(true); // Set dataLoaded to true after fetching data
+        
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -52,7 +54,7 @@ function Projections() {
 
       <div
       className="ag-theme-quartz" // applying the grid theme
-      style={{ height: 500 }} // the grid will fill the size of the parent container
+      style={{height: '75vh' }} // the grid will fill the size of the parent container
       >
         {dataLoaded && ( // Conditionally render AgGridReact only when data is loaded
           <AgGridReact
