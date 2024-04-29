@@ -81,38 +81,38 @@ def entry():
 #         cursor.close()
 #         return jsonify({'error': str(e)}), 500
 
-@app.route("/upload_csv_to_db", methods=['POST'])
-def upload_csv_to_db():
-    # Check if a file is present in the request
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'})
+# @app.route("/upload_csv_to_db", methods=['POST'])
+# def upload_csv_to_db():
+#     # Check if a file is present in the request
+#     if 'file' not in request.files:
+#         return jsonify({'error': 'No file part'})
     
-    file = request.files['file']
+#     file = request.files['file']
     
-    # Check if the file has a CSV extension
-    if file.filename.split('.')[-1] != 'csv':
-        return jsonify({'error': 'File must be in CSV format'})
+#     # Check if the file has a CSV extension
+#     if file.filename.split('.')[-1] != 'csv':
+#         return jsonify({'error': 'File must be in CSV format'})
     
-    try:
-        # Read the CSV file into a pandas DataFrame
-        df = pd.read_csv(file)
+#     try:
+#         # Read the CSV file into a pandas DataFrame
+#         df = pd.read_csv(file)
         
-        # Connect to MySQL database
-        cursor = mysql.connection.cursor()
+#         # Connect to MySQL database
+#         cursor = mysql.connection.cursor()
         
-        # Assuming your table name is 'your_table_name', replace it with your actual table name
-        # Upload DataFrame to MySQL table
-        df.to_sql(name='your_table_name', con=mysql.connection, if_exists='replace', index=False)
+#         # Assuming your table name is 'your_table_name', replace it with your actual table name
+#         # Upload DataFrame to MySQL table
+#         df.to_sql(name='your_table_name', con=mysql.connection, if_exists='replace', index=False)
         
-        # Commit changes
-        mysql.connection.commit()
+#         # Commit changes
+#         mysql.connection.commit()
         
-        # Close cursor
-        cursor.close()
+#         # Close cursor
+#         cursor.close()
         
-        return jsonify({'success': True, 'message': 'Data uploaded to database successfully'})
-    except Exception as e:
-        return jsonify({'error': str(e)})
+#         return jsonify({'success': True, 'message': 'Data uploaded to database successfully'})
+#     except Exception as e:
+#         return jsonify({'error': str(e)})
 
 
 @app.route('/time')

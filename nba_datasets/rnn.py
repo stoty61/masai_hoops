@@ -345,6 +345,8 @@ def clean_prediction_df(df):
 
 df_final = clean_prediction_df(prediction_df)
 
+
+
 # Display the filled prediction_df
 # print(df_final.columns)
 print(df_final.head())
