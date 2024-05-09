@@ -3,3 +3,7 @@ html, body, #app, #app>div {
   width: 100%
 }
 
+.extra-height{
+  height: 2000%;
+}
+

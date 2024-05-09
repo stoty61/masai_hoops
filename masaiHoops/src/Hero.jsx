@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import * as THREE from 'three';
 import { Canvas } from "@react-three/fiber"
 import { useFrame } from '@react-three/fiber';
-import { OrbitControls, useHelper } from "@react-three/drei"
+import { OrbitControls, useHelper, Stars, Html, Text3D, useGLTF  } from "@react-three/drei"
 import { useControls } from "leva"
 import { useLoader } from '@react-three/fiber';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import logo from './assets/name.png';
 import kawhi from './kawhi-the-shot.gif';
 import Card from './Card';
+import fontJson from './fonts/cool.json'; // Path to your 3D font
 
 
 const Cube = ({position, size, color}) => {
@@ -48,39 +49,25 @@ const Basketball = () => {
 
   return <primitive 
   object={gltf.scene} 
-  scale={[20,20,20]}
+  scale={[10,10,10]}
   ref={meshRef}
-  position={[0,-2,0]}
+  position={[0,-2.5, 0]}
   onPointerEnter={(event) => (event.stopPropagation(), setIsHovered(true))}
   onPointerLeave={() => setIsHovered(false)}
   />;
 };
 
 
-const Sphere = ({position, size, color}) => {
+const Earth = () => {
+  const gltf = useLoader(GLTFLoader, 'src/assets/eart.glb');
 
-  const ref = useRef() 
+  return <primitive 
+  object={gltf.scene} 
+  scale={[0.1,0.1,0.1]}
+  position={[0,-2.5, 0]}
+  />;
+};
 
-  const [isHovered, setIsHovered] = useState(false);
-  const [isClicked, setIsClicked] = useState(false);
-
-  useFrame((state, delta) => {
-    ref.current.rotation.y += delta * 0.2
-  })
-
-  return ( 
-    <mesh position={position} ref={ref} 
-    onPointerEnter={(event) => (event.stopPropagation(), setIsHovered(true))}
-    onPointerLeave={() => setIsHovered(false)}
-    onClick={() => setIsClicked(!isClicked)}
-    scale={isClicked ? 1.5: 1}
-    >
-      <sphereGeometry args={size}/>
-      <meshStandardMaterial color={isHovered ? color : "blue"} wireframe/> 
-    </mesh>
-  )
-
-}
 
 const Scene = () => {
 
@@ -113,17 +100,63 @@ const Scene = () => {
   return (
     <>
       <directionalLight 
-      position={[2,2,2]}
+      position={[-2,-2,-2]}
       intensity={dLightIntensity}
       ref={directionalLightRef}
       color={dLightColor}/>
+
+<directionalLight 
+      position={[2,2,2]}
+      intensity={dLightIntensity}
+      ref={directionalLightRef}
+      color={dLightColor}/>   
       
       <ambientLight intensity={aLightIntensity} color={aLightColor}
       ref={ambientLightRef}/>
 
       {/* <Sphere position={[0,0,0]} color={"orange"}/>  */}
-      <Basketball />
-      <OrbitControls enabled={false}/>
+    
+
+          {/* Add the Earth model to the right of the basketball */}
+          <Earth /> // Imported GLB
+
+      <Text3D
+              font={fontJson} // Load the 3D font
+              size={1}        // Adjust size
+              height={0.5}    // Extrusion depth
+              bevelEnabled={true} // Add a bevel for a smoother look
+              bevelThickness={0.1} // Bevel thickness
+              bevelSize={0.1}      // Bevel size
+              bevelOffset={0}      // Bevel offset
+              bevelSegments={8}    // Number of bevel segments
+              position={[-2.2, 1.8, 0]} // Adjust position
+            >
+              MASAI
+              {/* Material for the text */}
+              <meshStandardMaterial color="white" />
+            </Text3D>
+
+        
+      {/* Create a starry background */}
+      <Stars
+        radius={100} // Radius of the starry sphere
+        depth={50}   // Depth into which stars appear
+        count={5000} // Number of stars
+        factor={8}   // Star intensity and size factor
+        saturation={0} // Grayscale
+        fade // If you want a fading effect towards the edges
+      />
+
+
+
+<OrbitControls
+        enableZoom={false}   // Disable zooming
+        enablePan={false}    // Disable panning
+        maxPolarAngle={Math.PI / 2} // Limit vertical rotation to horizontal plane
+        minPolarAngle={Math.PI / 2} // Limit vertical rotation to horizontal plane
+      />
+
+
     </>
   );
 
@@ -146,24 +179,30 @@ function Hero() {
 
   return (
     <>
-      <div className='d-flex justify-content-center align-items-center mt-4'>
-          <img src={logo} height="50" alt="Logo" />
-      </div>
 
-      { !kawhiDone && (
+
+      { false && (
         <div className='d-flex justify-content-center align-items-center mt-4'>
             <img src={kawhi} height="500" alt="Kawhi" />
         </div> 
         )
       } 
 
-      { kawhiDone && 
+      { true && 
       (
       <>
-      <div className='canvas-container'>
-        <Canvas>
-          <Scene />
+      <div className='canvas-container extra-height'>
+        <Canvas style={{  width: '100%', height: '150%', backgroundColor: '#000033' }}>
+    
+          <Suspense fallback={null}>
+            <Scene />
+                    {/* Static text within the Canvas */}
+                                {/* Render 3D bubble text */}
+
+          </Suspense>
         </Canvas> 
+
+        
         <Card />
       </div>
       </>
