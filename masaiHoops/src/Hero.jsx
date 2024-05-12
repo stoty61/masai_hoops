@@ -57,7 +57,7 @@ const Basketball = () => {
   />;
 };
 
-
+// hello 
 const Earth = () => {
   const gltf = useLoader(GLTFLoader, 'src/assets/eart.glb');
 
