@@ -10,7 +10,7 @@ import logo from './assets/name.png';
 import kawhi from './kawhi-the-shot.gif';
 import Card from './Card';
 import fontJson from './fonts/cool.json'; // Path to your 3D font
-
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 
 const Cube = ({position, size, color}) => {
 
@@ -31,6 +31,12 @@ const Cube = ({position, size, color}) => {
         <meshStandardMaterial color={color}/> 
       </mesh>
     )
+}
+function Model({ url }) {
+  const fbx = useLoader(FBXLoader, "src/assets/earth_tut.fbx");
+  return <primitive object={fbx} 
+  scale={[10,10,10]}
+  />;
 }
 
 const Basketball = () => {
@@ -59,12 +65,12 @@ const Basketball = () => {
 
 // hello 
 const Earth = () => {
-  const gltf = useLoader(GLTFLoader, 'src/assets/eart.glb');
+  const gltf = useLoader(FBXLoader, "src/assets/earth_tut.fbx");
 
   return <primitive 
   object={gltf.scene} 
-  scale={[0.1,0.1,0.1]}
-  position={[0,-2.5, 0]}
+  scale={[2,2,2]}
+  position={[0,1, 0]}
   />;
 };
 
@@ -116,9 +122,10 @@ const Scene = () => {
 
       {/* <Sphere position={[0,0,0]} color={"orange"}/>  */}
     
+      <Basketball />
 
           {/* Add the Earth model to the right of the basketball */}
-          <Earth /> // Imported GLB
+          <Model /> 
 
       <Text3D
               font={fontJson} // Load the 3D font
@@ -134,7 +141,7 @@ const Scene = () => {
               MASAI
               {/* Material for the text */}
               <meshStandardMaterial color="white" />
-            </Text3D>
+      </Text3D>
 
         
       {/* Create a starry background */}
@@ -149,8 +156,8 @@ const Scene = () => {
 
 
 
-<OrbitControls
-        enableZoom={false}   // Disable zooming
+    <OrbitControls
+        enableZoom={true}   // Disable zooming
         enablePan={false}    // Disable panning
         maxPolarAngle={Math.PI / 2} // Limit vertical rotation to horizontal plane
         minPolarAngle={Math.PI / 2} // Limit vertical rotation to horizontal plane
