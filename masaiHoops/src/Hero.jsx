@@ -32,47 +32,33 @@ const Cube = ({position, size, color}) => {
       </mesh>
     )
 }
-function Model({ url }) {
-  const fbx = useLoader(FBXLoader, "src/assets/earth_tut.fbx");
-  return <primitive object={fbx} 
-  scale={[10,10,10]}
-  />;
+
+function Earth() {
+  const gltf = useGLTF('src/assets/earth.glb');
+  const meshRef = useRef();
+  return <primitive object={gltf.scene} scale={[1.1, 1.1, 1.1]} position={[20, -1.2, 0]} ref={meshRef} />;
 }
 
 const Basketball = () => {
-  const gltf = useLoader(GLTFLoader, 'src/assets/Basketball_ball2.glb');
+  const gltf = useGLTF('src/assets/Basketball_ball2.glb');
   const meshRef = useRef();
-
   const [isHovered, setIsHovered] = useState(false);
-
   useFrame((state, delta) => {
-
       meshRef.current.rotation.y += delta * 1.15;
       meshRef.current.rotation.y += isHovered ? 0.02 : 0;
-      
-    
   });
-
   return <primitive 
-  object={gltf.scene} 
-  scale={[10,10,10]}
-  ref={meshRef}
-  position={[0,-2.5, 0]}
-  onPointerEnter={(event) => (event.stopPropagation(), setIsHovered(true))}
-  onPointerLeave={() => setIsHovered(false)}
+      object={gltf.scene} 
+      scale={[10,10,10]}
+      ref={meshRef}
+      position={[0,-2.5, 0]}
+      onPointerEnter={(event) => (event.stopPropagation(), setIsHovered(true))}
+      onPointerLeave={() => setIsHovered(false)}
   />;
 };
 
-// hello 
-const Earth = () => {
-  const gltf = useLoader(FBXLoader, "src/assets/earth_tut.fbx");
 
-  return <primitive 
-  object={gltf.scene} 
-  scale={[2,2,2]}
-  position={[0,1, 0]}
-  />;
-};
+
 
 
 const Scene = () => {
@@ -125,7 +111,7 @@ const Scene = () => {
       <Basketball />
 
           {/* Add the Earth model to the right of the basketball */}
-          <Model /> 
+      <Earth /> 
 
       <Text3D
               font={fontJson} // Load the 3D font
@@ -208,6 +194,7 @@ function Hero() {
 
           </Suspense>
         </Canvas> 
+
 
         
         <Card />
