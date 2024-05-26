@@ -332,13 +332,13 @@ function Hero() {
       )}
       {true && (
         <>
-          <div className='canvas-container extra-height' style={{ width: '100vw', height: '74vh'}}>
+          <div className='canvas-container extra-height' style={{ width: '100vw',height: 'calc(100vh - 76px)'}}>
             <Canvas style={{ backgroundColor: '#000033' }} camera={{ position: [0, 0, 5] }}>
               <Suspense fallback={null}>
                 <Scene />
               </Suspense>
             </Canvas>
-            <Card />
+            {/* <Card /> */}
           </div>
         </>
       )}

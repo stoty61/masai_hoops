@@ -1,14 +1,23 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './assets/styles.css'; // Add your custom CSS for styling
 
-function Card() {
+function Card({ title, text, right }) {
   return (
-    <div className='d-flex justify-content-center'>
-      <div className="card w-100">
-        <div className="card-body text-center">
-          <h5 className="card-title">Championships are built through proper management</h5>
-          <p className="card-text">And proper management requires cutting edge tools</p>
-          <a href="#" className="btn btn-primary">About masAI</a>
+    <div className="row ms-1 me-1">
+      {right && (
+        <div className="col-md-6 border-only-right-side p-3">
+          <div className="d-flex justify-content-center align-items-center h-100 ">
+          
+          </div>
+        </div>
+      )}
+      <div className={`col-md-6 ${right ? `` : `border-only-right-side`}`}>
+        <div className="card h-100">
+          <div className="card-body">
+            <h5 className="card-title">{title}</h5>
+            <p className="card-text">{text}</p>
+          </div>
         </div>
       </div>
     </div>

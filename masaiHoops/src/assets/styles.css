@@ -71,3 +71,20 @@ html, body, #root, #app, #app>div {
 .header-component {
   color: #080D60
 }
+
+.right{
+  justify-content: right;
+  text-align: right;
+}
+
+.border-only-right-side {
+  border-right: 2px solid black; /* Example: Adds a red border to the left side */
+}
+
+.Kimberly{
+  background-color: #000033;
+}
+
+.timeline{
+  color: #e09e27;
+}

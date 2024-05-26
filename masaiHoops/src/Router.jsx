@@ -9,6 +9,7 @@ import Hero from './Hero';
 import { Leva } from 'leva';
 import { useSelector } from 'react-redux';
 import Projections from './Projections';
+import ScrollAnimation from './ScrollAnimation';
 
 function Router() {
   const activeTab = useSelector((state) => state.globalInfo.activeTab);
@@ -20,8 +21,9 @@ function Router() {
         return(
           <>
             <Hero />
-            <Leva />
-            <App />
+            {/* <Leva /> */}
+            <ScrollAnimation />
+
           </>
         )
 
