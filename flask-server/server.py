@@ -15,6 +15,18 @@ app.config['MYSQL_DB'] = 'u835552006_BallStats'
 mysql = MySQL(app)
 
 
+# greet function
+@app.route('/greet', methods=['POST'])
+def greet():
+    data = request.json
+    name = data.get('name')
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    greeting = f"Hello, {name}!"
+    return jsonify({'message': greeting}), 200
+
+
+
 # @app.route("/members")
 # def members():
 #     cur = mysql.connection.cursor()
